@@ -1,0 +1,25 @@
+{
+  "name": "lcts",
+  "version": "1.0.0",
+  "description": "Lambda Calculus parser and interpreter made in TypeScript's type system",
+  "author": "Fernando Silva <fernandonsilva16@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint .",
+    "start": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@type-challenges/utils": "^0.1.1",
+    "@types/bun": "^1.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/parser": "^5.26.0",
+    "eslint": "^8.16.0",
+    "eslint-import-resolver-typescript": "^2.7.1",
+    "eslint-plugin-import": "^2.26.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@types/node": "^20.10.4"
+  }
+}
