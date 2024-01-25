@@ -1,7 +1,7 @@
 {
   "name": "lcts",
   "version": "1.0.0",
-  "description": "Lambda Calculus parser and interpreter made in TypeScript's type system",
+  "description": "Lambda Calculus parser and interpreter made in JavaScript",
   "author": "Fernando Silva <fernandonsilva16@gmail.com>",
   "license": "MIT",
   "scripts": {

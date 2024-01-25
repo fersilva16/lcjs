@@ -9,6 +9,7 @@ import {
   isTkLeftPar,
   isTkRightPar,
 } from './data/Token';
+import { debug } from './utils/debug';
 
 type State = Array<Token | Expr>;
 
@@ -33,23 +34,31 @@ const parseAbs = (state: State, tokens: Token[]) => {
     return undefined;
   }
 
-  if (
-    isTkLambda(state[0]) &&
-    isEVar(state[1]) &&
-    isTkDot(state[2]) &&
-    isExpr(state[3])
-  ) {
-    if (
-      !(
-        tokens[0] &&
-        isTkSpace(tokens[0]) &&
-        tokens[1] &&
-        (isTkLambda(tokens[1]) || isTkLeftPar(tokens[1]))
-      )
-    ) {
-      return eAbs(state[1].name, state[3]);
-    }
+  if (!isTkLambda(state[0])) {
+    return undefined;
   }
+
+  if (!isEVar(state[1])) {
+    return undefined;
+  }
+
+  if (!isTkDot(state[2])) {
+    return undefined;
+  }
+
+  if (!isExpr(state[3])) {
+    return undefined;
+  }
+
+  if (isTkSpace(tokens[0])) {
+    return undefined;
+  }
+
+  if (isTkLambda(tokens[1]) || isTkLeftPar(tokens[1])) {
+    return undefined;
+  }
+
+  return eAbs(state[1].name, state[3]);
 };
 
 const parseApp = (state: State) => {
@@ -108,6 +117,8 @@ export const reduce = (
 };
 
 const shift = (state: State, tokens: Token[]): [Expr, Token[]] => {
+  debug('shift', state, tokens);
+
   const [token, ...rest] = tokens;
 
   if (!tokens.length && state.length) {
