@@ -24,39 +24,28 @@ export type EApp = {
 
 export type Expr = EVar | EAbs | EApp;
 
-const exprFactor = <T extends Expr>(expr: T): T => ({
+const exprFactory = <T extends Expr>(expr: T): T => ({
   ...expr,
   [util.inspect.custom]() {
     return prettyPrint(expr);
-    // if (isEVar(expr)) {
-    //   return `EVar(${expr.name})`;
-    // }
-
-    // if (isEAbs(expr)) {
-    //   return `EAbs(${expr.param}, ${util.inspect(expr.body)})`;
-    // }
-
-    // if (isEApp(expr)) {
-    //   return `EApp(${util.inspect(expr.func)}, ${util.inspect(expr.arg)})`;
-    // }
   },
 });
 
 export const eVar = (name: string) =>
-  exprFactor<EVar>({
+  exprFactory<EVar>({
     kind: 'expr',
     type: 'Var',
     name,
   });
 export const eAbs = (param: string, body: Expr) =>
-  exprFactor<EAbs>({
+  exprFactory<EAbs>({
     kind: 'expr',
     type: 'Abs',
     param,
     body,
   });
 export const eApp = (func: Expr, arg: Expr) =>
-  exprFactor<EApp>({
+  exprFactory<EApp>({
     kind: 'expr',
     type: 'App',
     func,
