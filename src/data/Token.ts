@@ -27,12 +27,7 @@ export type TkDot = {
   type: 'Dot';
 };
 
-export type TkSpace = {
-  kind: 'token';
-  type: 'Space';
-};
-
-export type Token = TkVar | TkLambda | TkLeftPar | TkRightPar | TkDot | TkSpace;
+export type Token = TkVar | TkLambda | TkLeftPar | TkRightPar | TkDot;
 
 const tokenFactory = <T extends Token>(token: T): T => ({
   ...token,
@@ -55,8 +50,6 @@ export const tkRightPar = () =>
     type: 'RightPar',
   });
 export const tkDot = () => tokenFactory<TkDot>({ kind: 'token', type: 'Dot' });
-export const tkSpace = () =>
-  tokenFactory<TkSpace>({ kind: 'token', type: 'Space' });
 
 export const isToken = (data?: Data): data is Token => data?.kind === 'token';
 export const isTkVar = (token?: Data): token is TkVar =>
@@ -69,5 +62,3 @@ export const isTkRightPar = (token?: Data): token is TkVar =>
   isToken(token) && token.type === 'RightPar';
 export const isTkDot = (token?: Data): token is TkVar =>
   isToken(token) && token.type === 'Dot';
-export const isTkSpace = (token?: Data): token is TkVar =>
-  isToken(token) && token.type === 'Space';
