@@ -5,7 +5,6 @@ import {
   isTkVar,
   isTkLambda,
   isTkDot,
-  isTkSpace,
   isTkLeftPar,
   isTkRightPar,
 } from './data/Token';
@@ -50,11 +49,7 @@ const parseAbs = (state: State, tokens: Token[]) => {
     return undefined;
   }
 
-  if (isTkSpace(tokens[0])) {
-    return undefined;
-  }
-
-  if (isTkLambda(tokens[1]) || isTkLeftPar(tokens[1])) {
+  if (isTkVar(tokens[0]) || isTkLambda(tokens[0]) || isTkLeftPar(tokens[0])) {
     return undefined;
   }
 
@@ -62,12 +57,12 @@ const parseAbs = (state: State, tokens: Token[]) => {
 };
 
 const parseApp = (state: State) => {
-  if (state.length !== 3) {
+  if (state.length !== 2) {
     return undefined;
   }
 
-  if (isExpr(state[0]) && isTkSpace(state[1]) && isExpr(state[2])) {
-    return eApp(state[0], state[2]);
+  if (isExpr(state[0]) && isExpr(state[1])) {
+    return eApp(state[0], state[1]);
   }
 
   return undefined;
@@ -85,11 +80,11 @@ const parseParen = (state: State) => {
   return undefined;
 };
 
-export const tryParse = (state: State, tokens: Token[]) => {
+export const parseExpr = (state: State, tokens: Token[]) => {
   const r =
     parseParen(state) ||
-    parseApp(state) ||
     parseAbs(state, tokens) ||
+    parseApp(state) ||
     parseVar(state);
 
   return r;
@@ -100,6 +95,8 @@ export const reduce = (
   chars: State,
   tokens: Token[]
 ): [State, Token[]] => {
+  debug('reduce', state, chars, tokens);
+
   if (!state.length) {
     return [chars, tokens];
   }
@@ -107,7 +104,7 @@ export const reduce = (
   const others = state.slice(0, -1);
   const last = state.at(-1) as Data;
 
-  const parsed = tryParse([last, ...chars], tokens);
+  const parsed = parseExpr([last, ...chars], tokens);
 
   if (parsed) {
     return reduce([...others, parsed], [], tokens);

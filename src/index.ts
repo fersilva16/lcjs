@@ -4,5 +4,5 @@ import { prettyPrint } from './prettyPrint';
 import { tokenize } from './tokenize';
 
 export const lambdaCalculus = (code: string) => {
-  return prettyPrint(interp(parse(tokenize(code.trim()))[0]));
+  return prettyPrint(interp(parse(tokenize(code))[0]));
 };

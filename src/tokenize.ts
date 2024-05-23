@@ -12,7 +12,6 @@ import {
   tkLambda,
   tkLeftPar,
   tkRightPar,
-  tkSpace,
   tkVar,
 } from './data/Token';
 
@@ -25,35 +24,31 @@ export const tokenize = (code: string): Token[] => {
 
   const getToken = () => {
     if (isLetter(char)) {
-      return tkVar(char);
+      return [tkVar(char)];
     }
 
     if (isLambda(char)) {
-      return tkLambda();
+      return [tkLambda()];
     }
 
     if (isLeftPar(char)) {
-      return tkLeftPar();
+      return [tkLeftPar()];
     }
 
     if (isRightPar(char)) {
-      return tkRightPar();
+      return [tkRightPar()];
     }
 
     if (isDot(char)) {
-      return tkDot();
+      return [tkDot()];
     }
 
     if (isSpace(char)) {
-      return tkSpace();
+      return [];
     }
 
     throw new Error('Invalid char');
   };
 
-  return [getToken(), ...tokenize(rest.join(''))];
+  return [...getToken(), ...tokenize(rest.join(''))];
 };
-
-export type Tokenize<CS extends string> = CS extends `${infer C}${infer R}`
-  ? [...Tokenize<R>]
-  : [];

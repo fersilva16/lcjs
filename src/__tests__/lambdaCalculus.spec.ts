@@ -18,6 +18,14 @@ it('should return abs if not reducible with app inside', () => {
   expect(lambdaCalculus('λy.y y')).toBe('λy.y y');
 });
 
+it('should return abs if not reducible with app and abs inside', () => {
+  expect(lambdaCalculus('λy.y λy.y y')).toBe('λy.(y λy.y y)');
+});
+
+it('should return abs if not reducible with app and abs with parens inside', () => {
+  expect(lambdaCalculus('λy.y (λy.y y)')).toBe('λy.(y λy.y y)');
+});
+
 it('should return app if not reducible with var and var', () => {
   expect(lambdaCalculus('x y')).toBe('x y');
 });
