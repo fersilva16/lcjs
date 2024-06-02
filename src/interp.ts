@@ -1,51 +1,7 @@
 import { Expr, eAbs, eApp, eVar, isEAbs, isEApp, isEVar } from './data/Expr';
-import { prettyPrint } from './prettyPrint';
 import { debug } from './utils/debug';
 
-const equivalence = (
-  a: Expr,
-  b: Expr,
-  ctxA: string[] = [],
-  ctxB: string[] = []
-): boolean => {
-  debug('equivalence', prettyPrint(a), prettyPrint(b), ctxA, ctxB);
-
-  if (isEVar(a) && isEVar(b)) {
-    const indexA = ctxA.indexOf(a.name);
-    const indexB = ctxB.indexOf(b.name);
-
-    console.log({ indexA, indexB });
-
-    if (indexA >= 0 && indexB >= 0) {
-      return indexA === indexB;
-    }
-
-    if (indexA >= 0 && indexB === -1) {
-      return false;
-    }
-
-    if (indexA === -1 && indexB >= 0) {
-      return false;
-    }
-
-    return a.name === b.name;
-  }
-
-  if (isEAbs(a) && isEAbs(b)) {
-    return equivalence(a.body, b.body, [...ctxA, a.param], [...ctxB, b.param]);
-  }
-
-  if (isEApp(a) && isEApp(b)) {
-    return (
-      equivalence(a.func, b.func, ctxA, ctxB) &&
-      equivalence(a.arg, b.arg, ctxA, ctxB)
-    );
-  }
-
-  return false;
-};
-
-const FV = (expr: Expr, ctx: string[] = []): string[] => {
+const FV = (expr: Expr, ctx: string[]): string[] => {
   if (isEVar(expr)) {
     const { name } = expr;
 
@@ -71,88 +27,34 @@ const FV = (expr: Expr, ctx: string[] = []): string[] => {
   throw new Error('Invalid expr');
 };
 
-const conversion = (expr: Expr, name: string, newName: string): Expr => {
-  debug('conversion', prettyPrint(expr), name);
+export const interp = (
+  expr: Expr,
+  ctx: Record<string, Expr> = {},
+  fvs: string[] = []
+): Expr => {
+  debug('interp', expr, ctx);
 
   if (isEVar(expr)) {
-    if (expr.name === name) {
-      return eVar(newName);
-    }
+    const { name } = expr;
 
-    return expr;
+    return ctx[name] || expr;
   }
 
   if (isEAbs(expr)) {
     const { param, body } = expr;
 
-    if (param === name) {
-      return eAbs(newName, conversion(body, name, newName));
-    }
-
-    return expr;
-  }
-
-  if (isEApp(expr)) {
-    const { func, arg } = expr;
-
-    return eApp(
-      conversion(func, name, newName),
-      conversion(arg, name, newName)
-    );
-  }
-
-  throw new Error('Invalid expr');
-};
-
-const substitute = (expr: Expr, name: string, value: Expr): Expr => {
-  debug('substitute', prettyPrint(expr), name, prettyPrint(value));
-
-  if (isEVar(expr)) {
-    if (expr.name === name) {
-      return value;
-    }
-
-    return expr;
-  }
-
-  if (isEAbs(expr)) {
-    const { param, body } = expr;
-
-    if (param === name) {
+    if (ctx[param]) {
       return expr;
     }
 
-    const fvars = FV(value);
-
-    if (fvars.includes(param)) {
-      const newParam = `${param}'`;
-
-      return substitute(conversion(expr, param, newParam), name, value);
+    if (fvs.includes(param)) {
+      return eAbs(
+        `${param}'`,
+        interp(interp(body, { [param]: eVar(`${param}'`) }), ctx)
+      );
     }
 
-    return eAbs(param, substitute(body, name, value));
-  }
-
-  if (isEApp(expr)) {
-    const { func, arg } = expr;
-
-    return eApp(substitute(func, name, value), substitute(arg, name, value));
-  }
-
-  throw new Error('Invalid expr');
-};
-
-export const interp = (expr: Expr): Expr => {
-  debug('interp', prettyPrint(expr));
-
-  if (isEVar(expr)) {
-    return expr;
-  }
-
-  if (isEAbs(expr)) {
-    const { param, body } = expr;
-
-    return eAbs(param, interp(body));
+    return eAbs(param, interp(body, ctx));
   }
 
   if (isEApp(expr)) {
@@ -161,14 +63,18 @@ export const interp = (expr: Expr): Expr => {
     if (isEAbs(func)) {
       const { param, body } = func;
 
-      return interp(substitute(body, param, arg));
+      const argFvs = FV(arg, Object.keys(ctx));
+
+      return interp(body, { ...ctx, [param]: arg }, [...fvs, ...argFvs]);
     }
 
-    const newFunc = interp(func);
-    const newArg = interp(arg);
+    const newFunc = interp(func, ctx);
+    const newArg = interp(arg, ctx);
 
     if (isEAbs(newFunc)) {
-      return interp(eApp(newFunc, newArg));
+      const newArgFvs = FV(newArg, Object.keys(ctx));
+
+      return interp(eApp(newFunc, newArg), ctx, [...fvs, ...newArgFvs]);
     }
 
     return eApp(newFunc, newArg);
